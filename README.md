@@ -13,6 +13,7 @@ the files to be managed. It should be set up such that index 2k is the source
 file in the repository, and index 2k+1 is the destination of the link.
 
 Example:
+
     # ~/etc/.link-files
 
     FILES=(
@@ -53,3 +54,5 @@ To restore the envinronment to its original state, use:
 Use the `-h` flag to see an overview of all available options:
 
     ./link.sh -h
+
+[link.sh]:http://github.com/acx0/link.sh
