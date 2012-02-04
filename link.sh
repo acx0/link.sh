@@ -117,10 +117,14 @@ delete() {
             fi
         fi
 
-        if [[ -L $DST ]]; then
+        if [[ ! -e $DST ]]; then
+            echo >&2 "$(basename $0): warning: file does not exist"
+        elif [[ -L $DST || $FFLAG == 1 ]]; then
             rm -v $DST
+            remove_parents $SRC $DST
+        else
+            echo >&2 "$(basename $0): warning: file not symlink; not removing"
         fi
-        remove_parents $SRC $DST
     done
 }
 
