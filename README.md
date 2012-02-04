@@ -8,7 +8,7 @@ any machine you happen to be working on, permanently or temporarily.
 Specify the git repository containing the dotfiles by setting the `SOURCE_DIR`
 variable. link.sh will look in `~/etc` by default. 
 
-The configuration file (~/etc/.link-files` by default), contains an array of
+The configuration file (`~/etc/.link-files` by default), contains an array of
 the files to be managed. It should be set up such that index 2k is the source
 file in the repository, and index 2k+1 is the destination of the link.
 
