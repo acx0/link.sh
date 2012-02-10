@@ -1,27 +1,12 @@
 #!/bin/bash
 
-### configurable settings
-SOURCE_DIR=$HOME/etc
-BACKUP_DIR=$SOURCE_DIR.bak
-
-# files to be managed (defined as array in FILES_DEF)
+# files to be managed (defined as array in LINK_CONF)
 #   index 2k is key (source)
 #   index 2k+1 is value (destination)
-FILES_DEF=$SOURCE_DIR/.link-files
-
-### functions
-if [[ ! -e $FILES_DEF ]]; then
-    echo >&2 "$(basename $0): error: \`$FILES_DEF' does not exist; creating it"
-    echo "FILES=( )" > $FILES_DEF
-fi
-
-source $FILES_DEF
-FSIZE=$(( ${#FILES[@]} / 2 ))
-declare -a ARG_FILES
+LINK_CONF=$HOME/etc/.link.conf
 
 OPTIONS=0
 ALL=1
-
 FFLAG=0
 BFLAG=0
 DFLAG=0
@@ -36,7 +21,7 @@ check_options() {
     fi
 }
 
-check_arg_files() {
+read_opt_args() {
     if [[ -n $@ ]]; then
         read -ra ARG_FILES <<< "$@"
         FSIZE=$(( ${#ARG_FILES[@]} ))
@@ -44,8 +29,24 @@ check_arg_files() {
     fi
 }
 
-check_array() {
-    if (( ${#FILES[@]} % 2 != 0 )); then
+check_link_conf() {
+    if [[ ! -e $LINK_CONF ]]; then
+        echo >&2 "$(basename $0): error: \`$LINK_CONF' does not exist; creating it"
+        echo > $LINK_CONF << EOF 'SOURCE_DIR=$HOME/etc
+BACKUP_DIR=$SOURCE_DIR.bak
+
+FILES=( )'
+EOF
+    fi
+
+    source $LINK_CONF
+    FSIZE=$(( ${#FILES[@]} / 2 ))
+    declare -a ARG_FILES
+
+    if [[ ! -d $SOURCE_DIR ]]; then
+        echo >&2 "$(basename $0): error: \`$SOURCE_DIR' does not exist or not directory"
+        exit 1
+    elif (( ${#FILES[@]} % 2 != 0 )); then
         echo >&2 "$(basename $0): error: FILES array is missing a key or value"
         exit 1
     fi
@@ -242,8 +243,18 @@ view_diff() {
     vimdiff $VALUE $SOURCE_DIR/$KEY
 }
 
+use_config() {
+    if [[ -r $1 ]]; then
+        LINK_CONF=$1
+    else
+        echo >&2 "$(basename $0): error: cannot read \`$1'"
+        exit 1
+    fi
+}
+
 usage() {
-    echo -e >&2 "\nusage: $(basename $0) [-b] [-f] [-d [files]] [-r [files]] [-w [files]] [-v file]"
+    echo -e >&2 "\nusage: $(basename $0) [-u file] [-b] [-f] [-d [files]] [-r [files]] [-w [files]] [-v file]"
+    echo -e >&2 "\t-u  use alternate configuration file"
     echo -e >&2 "\t-b  backup existing files"
     echo -e >&2 "\t-d  delete symlinks"
     echo -e >&2 "\t-f  force removal of existing files"
@@ -257,13 +268,13 @@ usage() {
     exit 1
 }
 
-### main
-check_array
-
 # process flags
-while getopts bdfhrvw OPT; do
+while getopts u:bdfhrvw OPT; do
     case "$OPT" in
-        h)
+        u)
+            use_config "$OPTARG"
+            ;;
+        h|\?)
             usage
             ;;
         f)
@@ -289,15 +300,12 @@ while getopts bdfhrvw OPT; do
             check_options && OPTIONS=1
             WFLAG=1
             ;;
-        ?)
-            usage
-            ;;
     esac
 done
 
-# process any optional arguments
+check_link_conf
 shift $(( $OPTIND - 1 ))
-check_arg_files "$@"
+read_opt_args "$@"
 
 if [[ $BFLAG == 1 ]]; then
     backup
