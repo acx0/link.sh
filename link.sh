@@ -114,7 +114,7 @@ delete() {
             SRC=${ARG_FILES[$i]}
             DST=$(get_value $SRC)
             if [[ $? == 1 ]]; then
-                exit
+                exit 1
             fi
         fi
 
@@ -142,7 +142,7 @@ list() {
         else
             DST=$(get_value ${ARG_FILES[$i]})
             if [[ $? == 1 ]]; then
-                exit
+                exit 1
             fi
         fi
 
@@ -174,7 +174,7 @@ restore() {
             SRC=${ARG_FILES[$i]}
             DST=$(get_value $SRC)
             if [[ $? == 1 ]]; then
-                exit
+                exit 1
             fi
         fi
 
@@ -212,7 +212,7 @@ write() {
             SRC=$SOURCE_DIR/${ARG_FILES[$i]}
             DST=$(get_value ${ARG_FILES[$i]})
             if [[ $? == 1 ]]; then
-                exit
+                exit 1
             fi
         fi
 
@@ -233,11 +233,11 @@ view_diff() {
     KEY=${ARG_FILES[0]}
     if [[ -z $KEY ]]; then
         echo >&2 "$(basename $0): error: option requires an argument"
-        exit
+        exit 1
     fi
     VALUE=$(get_value $KEY)
     if [[ $? == 1 ]]; then
-        exit
+        exit 1
     fi
 
     vimdiff $VALUE $SOURCE_DIR/$KEY
