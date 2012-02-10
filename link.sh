@@ -253,18 +253,19 @@ use_config() {
 }
 
 usage() {
-    echo -e >&2 "\nusage: $(basename $0) [-u file] [-b] [-f] [-d [files]] [-r [files]] [-w [files]] [-v file]"
-    echo -e >&2 "\t-u  use alternate configuration file"
-    echo -e >&2 "\t-b  backup existing files"
-    echo -e >&2 "\t-d  delete symlinks"
-    echo -e >&2 "\t-f  force removal of existing files"
-    echo -e >&2 "\t-r  restore from backup"
-    echo -e >&2 "\t-v  view diff"
-    echo -e >&2 "\t-w  write symlinks"
+    echo -e >&2 << EOF "usage: $(basename $0) [-u file] [-b] [-f] [-d [files]] [-r [files]] [-w [files]] [-v file]
+	-u  use alternate configuration file
+	-b  backup existing files
+	-d  delete symlinks
+	-f  force removal of existing files
+	-r  restore from backup
+	-v  view diff
+	-w  write symlinks
 
-    echo -e >&2 "\n\t-h  display this help and exit"
+	-h  display this help and exit
 
-    echo -e >&2 "\nnote: files to be managed must be defined in FILES array"
+note: files to be managed must be defined in configuration file"
+EOF
     exit 1
 }
 
