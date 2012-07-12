@@ -39,7 +39,11 @@ FILES=( )'
 EOF
     fi
 
-    source $LINK_CONF
+    source $LINK_CONF 2> /dev/null
+    if [[ $? != 0 ]]; then
+        echo >&2 "$(basename $0): error: \`$LINK_CONF' could not be sourced"
+        exit 1
+    fi
     FSIZE=$(( ${#FILES[@]} / 2 ))
     declare -a ARG_FILES
 
