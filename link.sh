@@ -55,7 +55,7 @@ EOF
 get_value() {
     KEY=$1
 
-    for (( i = 0; i < ${#FILES[@]}; i++ )); do
+    for (( i = 0; i < ${#FILES[@]} / 2; i++ )); do
         if [[ $KEY == ${FILES[2 * $i]} ]]; then
             echo ${FILES[2 * $i + 1]}
             return 0
