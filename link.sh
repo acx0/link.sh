@@ -67,25 +67,25 @@ get_value() {
 }
 
 backup() {
-    if [[ -e $BACKUP_DIR && $FFLAG == 0 ]]; then
-        echo >&2 "$(basename $0): error: backup directory already exists"
-        exit 1
-    else
-        if [[ -e $BACKUP_DIR ]]; then
+    if [[ -e $BACKUP_DIR ]]; then
+        if [[ $FFLAG == 1 ]]; then
             rm -rf $BACKUP_DIR
+        else
+            echo >&2 "$(basename $0): error: backup directory already exists"
+            exit 1
         fi
-        mkdir -v $BACKUP_DIR
     fi
+
+    mkdir -v $BACKUP_DIR
 
     for (( i = 0; i < $FSIZE; i++ )); do
         # $SRC and $DST are reversed since we're backing up
         SRC=${FILES[2 * $i + 1]}
         DST=${FILES[2 * $i]}
 
-        if [[ $(echo $DST | grep "/") && -e $SRC ]]; then
-            mkdir -p $BACKUP_DIR/$(dirname $DST)
-        fi
         if [[ -e $SRC ]]; then
+            # create any parent directories of $DST to mirror repo directory structure
+            mkdir -p $BACKUP_DIR/$(dirname $DST)
             cp -vrd $SRC $BACKUP_DIR/$DST
         fi
     done
