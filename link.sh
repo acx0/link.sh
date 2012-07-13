@@ -195,9 +195,11 @@ restore() {
             rm -rf $DST
         fi
         if [[ -e $BACKUP_DIR/$SRC ]]; then
-            if [[ $(echo $SRC | grep "/") ]]; then
-                mkdir -p $(dirname $DST)
-            fi
+            # create any parent directories of $DST
+            mkdir -p $(dirname $DST)
+
+            # when not restoring all files, copy instead of move since when we
+            # restore, we remove $DST
             if [[ $ALL == 1 ]]; then
                 mv -v $BACKUP_DIR/$SRC $DST
             else
@@ -232,9 +234,10 @@ write() {
         if [[ ! -e $DST || $FFLAG == 1 ]]; then
             if [[ -e $DST ]]; then
                 rm -rf $DST
-            elif [[ $(echo $SRC | grep "/") ]]; then
-                mkdir -p $(dirname $DST)
             fi
+
+            # create any parent directories of $DST
+            mkdir -p $(dirname $DST)
             ln -vfs $SRC $DST
         else
             echo >&2 "$(basename $0): warning: \`$DST' already exists"
@@ -248,6 +251,7 @@ view_diff() {
         echo >&2 "$(basename $0): error: option requires an argument"
         exit 1
     fi
+
     VALUE=$(get_value $KEY)
     if [[ $? == 1 ]]; then
         exit 1
