@@ -9,6 +9,7 @@ OPTIONS=0
 ALL=1
 FFLAG=0
 BFLAG=0
+CFLAG=0
 DFLAG=0
 RFLAG=0
 VFLAG=0
@@ -19,6 +20,7 @@ check_options() {
         echo >&2 "$(basename $0): error: too many options specified"
         usage
     fi
+    OPTIONS=1
 }
 
 # by default, functions operate on all files defined in $LINK_CONF, otherwise
@@ -92,7 +94,36 @@ backup() {
         if [[ -e $SRC ]]; then
             # create any parent directories of $DST to mirror repo directory structure
             mkdir -p $BACKUP_DIR/$(dirname $DST)
-            cp -vrd $SRC $BACKUP_DIR/$DST
+            echo "\`$SRC' -> \`$BACKUP_DIR/$DST'"
+            cp -rd $SRC $BACKUP_DIR/$DST
+        fi
+    done
+}
+
+copy() {
+    for (( i = 0; i < $FSIZE; i++ )); do
+        if [[ $ALL == 1 ]]; then
+            SRC=${FILES[2 * $i]}
+            DST=${FILES[2 * $i + 1]}
+        else
+            SRC=${ARG_FILES[$i]}
+            DST=$(get_value $SRC)
+            if [[ $? == 1 ]]; then
+                exit 1
+            fi
+        fi
+
+        if [[ ! -e $DST || $FFLAG == 1 ]]; then
+            if [[ -e $DST ]]; then
+                rm -rf $DST
+            fi
+
+            # create any parent directories of $DST
+            mkdir -p $(dirname $DST)
+            echo "\`$SOURCE_DIR/$SRC' -> \`$DST'"
+            cp -r $SOURCE_DIR/$SRC $DST
+        else
+            echo >&2 "$(basename $0): warning: \`$DST' already exists"
         fi
     done
 }
@@ -135,10 +166,17 @@ delete() {
             echo >&2 "$(basename $0): warning: \`$DST' does not exist"
             remove_parents $SRC $DST
         elif [[ -L $DST || $FFLAG == 1 ]]; then
-            rm -vrf $DST
+            # only print root directory name for directories
+            if [[ -d $DST ]]; then
+                rm -rf $DST
+                echo "removed directory \`$DST'"
+            else
+                rm -vf $DST
+            fi
+
             remove_parents $SRC $DST
         else
-            echo >&2 "$(basename $0): warning: \`$DST' not symlink; not removing"
+            echo >&2 "$(basename $0): warning: \`$DST' not symlink; use -f to remove"
         fi
     done
 }
@@ -270,9 +308,10 @@ use_config() {
 }
 
 usage() {
-    echo -e >&2 << EOF "usage: $(basename $0) [-u file] [-b] [-f] [-d [files]] [-r [files]] [-w [files]] [-v file]
+    echo -e >&2 << EOF "usage: $(basename $0) [-u file] [-b] [-c] [-f] [-d [files]] [-r [files]] [-w [files]] [-v file]
 	-u  use alternate configuration file
 	-b  backup existing files
+	-c  create local copy of file in repository
 	-d  delete symlinks
 	-f  force removal of existing files
 	-r  restore from backup
@@ -287,7 +326,7 @@ EOF
 }
 
 # process flags
-while getopts u:bdfhrvw OPT; do
+while getopts u:bcdfhrvw OPT; do
     case "$OPT" in
         u)
             use_config "$OPTARG"
@@ -299,24 +338,22 @@ while getopts u:bdfhrvw OPT; do
             FFLAG=1
             ;;
         b)
-            check_options && OPTIONS=1
-            BFLAG=1
+            check_options; BFLAG=1
+            ;;
+        c)
+            check_options; CFLAG=1
             ;;
         d)
-            check_options && OPTIONS=1
-            DFLAG=1
+            check_options; DFLAG=1
             ;;
         r)
-            check_options && OPTIONS=1
-            RFLAG=1
+            check_options; RFLAG=1
             ;;
         v)
-            check_options && OPTIONS=1
-            VFLAG=1
+            check_options; VFLAG=1
             ;;
         w)
-            check_options && OPTIONS=1
-            WFLAG=1
+            check_options; WFLAG=1
             ;;
     esac
 done
@@ -327,6 +364,8 @@ read_opt_args "$@"
 
 if [[ $BFLAG == 1 ]]; then
     backup
+elif [[ $CFLAG == 1 ]]; then
+    copy
 elif [[ $DFLAG == 1 ]]; then
     delete
 elif [[ $RFLAG == 1 ]]; then
