@@ -133,8 +133,9 @@ delete() {
 
         if [[ ! -e $DST ]]; then
             echo >&2 "$(basename $0): warning: \`$DST' does not exist"
+            remove_parents $SRC $DST
         elif [[ -L $DST || $FFLAG == 1 ]]; then
-            rm -v $DST
+            rm -rf $DST
             remove_parents $SRC $DST
         else
             echo >&2 "$(basename $0): warning: \`$DST' not symlink; not removing"
