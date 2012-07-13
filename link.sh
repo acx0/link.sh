@@ -132,12 +132,12 @@ delete() {
         fi
 
         if [[ ! -e $DST ]]; then
-            echo >&2 "$(basename $0): warning: file does not exist"
+            echo >&2 "$(basename $0): warning: \`$DST' does not exist"
         elif [[ -L $DST || $FFLAG == 1 ]]; then
             rm -v $DST
             remove_parents $SRC $DST
         else
-            echo >&2 "$(basename $0): warning: file not symlink; not removing"
+            echo >&2 "$(basename $0): warning: \`$DST' not symlink; not removing"
         fi
     done
 }
@@ -261,10 +261,9 @@ view_diff() {
 }
 
 use_config() {
-    if [[ -r $1 ]]; then
-        LINK_CONF=$1
-    else
-        echo >&2 "$(basename $0): error: cannot read \`$1'"
+    LINK_CONF=$1
+    if [[ ! -r $LINK_CONF ]]; then
+        echo >&2 "$(basename $0): error: cannot read \`$LINK_CONF'"
         exit 1
     fi
 }
