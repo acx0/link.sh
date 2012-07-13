@@ -21,6 +21,8 @@ check_options() {
     fi
 }
 
+# by default, functions operate on all files defined in $LINK_CONF, otherwise
+# only those specified as optional arguments (stored in $ARG_FILES)
 read_opt_args() {
     if [[ -n $@ ]]; then
         read -ra ARG_FILES <<< "$@"
@@ -95,6 +97,11 @@ backup() {
     done
 }
 
+# remove any empty parent directories of $SRC
+# limitations/bugs:
+#   - only cleans up parent directories if num_parents($SRC) >= num_parents($DST)
+#   - if num_parents($SRC) > num_parents($DST) - height(prefix($DST)), directories
+#     in prefix will attempt to be rmdir'd (caught if prefix == $HOME)
 remove_parents() {
     SRC=$1
     DST=$2
@@ -103,8 +110,10 @@ remove_parents() {
     while [[ $(echo $SRC | grep "/") ]]; do
         SRC=$(dirname $SRC)
         DST=$(dirname $DST)
-        if [[ -e $DST ]]; then
+        if [[ -e $DST && $DST != $HOME ]]; then
             rmdir -v $DST
+        else
+            break
         fi
     done
 }
