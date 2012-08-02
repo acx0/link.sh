@@ -3,7 +3,7 @@
 # files to be managed (defined as array in LINK_CONF)
 #   index 2k is key (source)
 #   index 2k+1 is value (destination)
-LINK_CONF=$HOME/etc/.link.conf
+LINK_CONF="$HOME/etc/.link.conf"
 
 OPTIONS=0
 ALL=1
@@ -36,14 +36,14 @@ read_opt_args() {
 check_link_conf() {
     if [[ ! -e $LINK_CONF ]]; then
         echo >&2 "$(basename $0): error: \`$LINK_CONF' does not exist; creating it"
-        echo > $LINK_CONF << EOF 'SOURCE_DIR=$HOME/etc
-BACKUP_DIR=$SOURCE_DIR.bak
+        echo > "$LINK_CONF" << EOF 'SOURCE_DIR="$HOME/etc"
+BACKUP_DIR="$SOURCE_DIR.bak"
 
 FILES=( )'
 EOF
     fi
 
-    source $LINK_CONF 2> /dev/null
+    source "$LINK_CONF" 2> /dev/null
     if [[ $? != 0 ]]; then
         echo >&2 "$(basename $0): error: \`$LINK_CONF' could not be sourced"
         exit 1
@@ -65,7 +65,7 @@ get_value() {
 
     for (( i = 0; i < ${#FILES[@]} / 2; i++ )); do
         if [[ $KEY == ${FILES[2 * $i]} ]]; then
-            echo ${FILES[2 * $i + 1]}
+            echo "${FILES[2 * $i + 1]}"
             return 0
         fi
     done
@@ -77,14 +77,14 @@ get_value() {
 backup() {
     if [[ -e $BACKUP_DIR ]]; then
         if [[ $FFLAG == 1 ]]; then
-            rm -rf $BACKUP_DIR
+            rm -rf "$BACKUP_DIR"
         else
             echo >&2 "$(basename $0): error: backup directory already exists"
             exit 1
         fi
     fi
 
-    mkdir -v $BACKUP_DIR
+    mkdir -v "$BACKUP_DIR"
 
     for (( i = 0; i < $FSIZE; i++ )); do
         # $SRC and $DST are reversed since we're backing up
@@ -93,9 +93,9 @@ backup() {
 
         if [[ -e $SRC ]]; then
             # create any parent directories of $DST to mirror repo directory structure
-            mkdir -p $BACKUP_DIR/$(dirname $DST)
+            mkdir -p "$BACKUP_DIR/$(dirname "$DST")"
             echo "\`$SRC' -> \`$BACKUP_DIR/$DST'"
-            cp -rd $SRC $BACKUP_DIR/$DST
+            cp -rd "$SRC" "$BACKUP_DIR/$DST"
         fi
     done
 }
@@ -107,7 +107,7 @@ copy() {
             DST=${FILES[2 * $i + 1]}
         else
             SRC=${ARG_FILES[$i]}
-            DST=$(get_value $SRC)
+            DST=$(get_value "$SRC")
             if [[ $? == 1 ]]; then
                 exit 1
             fi
@@ -115,13 +115,13 @@ copy() {
 
         if [[ ! -e $DST || $FFLAG == 1 ]]; then
             if [[ -e $DST ]]; then
-                rm -rf $DST
+                rm -rf "$DST"
             fi
 
             # create any parent directories of $DST
-            mkdir -p $(dirname $DST)
+            mkdir -p "$(dirname "$DST")"
             echo "\`$SOURCE_DIR/$SRC' -> \`$DST'"
-            cp -r $SOURCE_DIR/$SRC $DST
+            cp -r "$SOURCE_DIR/$SRC" "$DST"
         else
             echo >&2 "$(basename $0): warning: \`$DST' already exists"
         fi
@@ -138,11 +138,11 @@ remove_parents() {
     DST=$2
 
     # use $SRC to keep track of how many directories to remove
-    while [[ $(echo $SRC | grep "/") ]]; do
-        SRC=$(dirname $SRC)
-        DST=$(dirname $DST)
+    while [[ $(echo "$SRC" | grep "/") ]]; do
+        SRC=$(dirname "$SRC")
+        DST=$(dirname "$DST")
         if [[ -e $DST && $DST != $HOME ]]; then
-            rmdir -v $DST
+            rmdir -v "$DST"
         else
             break
         fi
@@ -156,7 +156,7 @@ delete() {
             DST=${FILES[2 * $i + 1]}
         else
             SRC=${ARG_FILES[$i]}
-            DST=$(get_value $SRC)
+            DST=$(get_value "$SRC")
             if [[ $? == 1 ]]; then
                 exit 1
             fi
@@ -164,17 +164,17 @@ delete() {
 
         if [[ ! -e $DST ]]; then
             echo >&2 "$(basename $0): warning: \`$DST' does not exist"
-            remove_parents $SRC $DST
+            remove_parents "$SRC" "$DST"
         elif [[ -L $DST || $FFLAG == 1 ]]; then
             # only print root directory name for directories
             if [[ -d $DST ]]; then
-                rm -rf $DST
+                rm -rf "$DST"
                 echo "removed directory \`$DST'"
             else
-                rm -vf $DST
+                rm -vf "$DST"
             fi
 
-            remove_parents $SRC $DST
+            remove_parents "$SRC" "$DST"
         else
             echo >&2 "$(basename $0): warning: \`$DST' not symlink; use -f to remove"
         fi
@@ -192,7 +192,7 @@ list() {
         if [[ $ALL == 1 ]]; then
             DST=${FILES[2 * $i + 1]}
         else
-            DST=$(get_value ${ARG_FILES[$i]})
+            DST=$(get_value "${ARG_FILES[$i]}")
             if [[ $? == 1 ]]; then
                 exit 1
             fi
@@ -224,35 +224,35 @@ restore() {
             DST=${FILES[2 * $i + 1]}
         else
             SRC=${ARG_FILES[$i]}
-            DST=$(get_value $SRC)
+            DST=$(get_value "$SRC")
             if [[ $? == 1 ]]; then
                 exit 1
             fi
         fi
 
         if [[ -e $DST ]]; then
-            rm -rf $DST
+            rm -rf "$DST"
         fi
         if [[ -e $BACKUP_DIR/$SRC ]]; then
             # create any parent directories of $DST
-            mkdir -p $(dirname $DST)
+            mkdir -p "$(dirname "$DST")"
 
             # when not restoring all files, copy instead of move since when we
             # restore, we remove $DST
             if [[ $ALL == 1 ]]; then
-                mv -v $BACKUP_DIR/$SRC $DST
+                mv -v "$BACKUP_DIR/$SRC" "$DST"
             else
-                cp -Pv $BACKUP_DIR/$SRC $DST
+                cp -Pv "$BACKUP_DIR/$SRC" "$DST"
             fi
         fi
-        remove_parents $SRC $BACKUP_DIR/$SRC
+        remove_parents "$SRC" "$BACKUP_DIR/$SRC"
     done
 
     if [[ $ALL == 1 ]]; then
-        if [[ $(ls -A $BACKUP_DIR) ]]; then
+        if [[ $(ls -A "$BACKUP_DIR") ]]; then
             echo >&2 "$(basename $0): warning: backup directory not empty; not removing"
         else
-            rmdir -v $BACKUP_DIR
+            rmdir -v "$BACKUP_DIR"
         fi
     fi
 }
@@ -264,7 +264,7 @@ write() {
             DST=${FILES[2 * $i + 1]}
         else
             SRC=$SOURCE_DIR/${ARG_FILES[$i]}
-            DST=$(get_value ${ARG_FILES[$i]})
+            DST=$(get_value "${ARG_FILES[$i]}")
             if [[ $? == 1 ]]; then
                 exit 1
             fi
@@ -272,12 +272,12 @@ write() {
 
         if [[ ! -e $DST || $FFLAG == 1 ]]; then
             if [[ -e $DST ]]; then
-                rm -rf $DST
+                rm -rf "$DST"
             fi
 
             # create any parent directories of $DST
-            mkdir -p $(dirname $DST)
-            ln -vfs $SRC $DST
+            mkdir -p "$(dirname "$DST")"
+            ln -vfs "$SRC" "$DST"
         else
             echo >&2 "$(basename $0): warning: \`$DST' already exists"
         fi
@@ -291,12 +291,12 @@ view_diff() {
         exit 1
     fi
 
-    VALUE=$(get_value $KEY)
+    VALUE=$(get_value "$KEY")
     if [[ $? == 1 ]]; then
         exit 1
     fi
 
-    vimdiff $VALUE $SOURCE_DIR/$KEY
+    vimdiff "$VALUE" "$SOURCE_DIR/$KEY"
 }
 
 use_config() {
