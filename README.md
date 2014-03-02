@@ -1,7 +1,9 @@
 ## About
 
 [link.sh] allows you to easily link and manage your git-controlled dotfiles on
-any machine you happen to be working on, permanently or temporarily.
+any machine you happen to be working on, permanently or temporarily. Note: this
+script was written to work with older versions of Bash, specifically those
+without support for associative arrays (versions < 4).
 
 ## Setup
 
