@@ -96,12 +96,12 @@ backup() {
             mkdir -p "$BACKUP_DIR/$(dirname "$DST")"
             echo "\`$SRC' -> \`$BACKUP_DIR/$DST'"
             case $(uname -s) in
-              *Linux*)
-                cp -rd "$SRC" "$BACKUP_DIR/$DST"
-                ;;
               *Darwin*)
                 # MacOS cp does not have a -d option.
                 cp -R "$SRC" "$BACKUP_DIR/$DST"
+                ;;
+              *)
+                cp -rd "$SRC" "$BACKUP_DIR/$DST"
                 ;;
             esac
         fi
