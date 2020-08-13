@@ -35,7 +35,7 @@ read_opt_args() {
 
 check_link_conf() {
     if [[ ! -e $LINK_CONF ]]; then
-        echo >&2 "$(basename $0): error: \`$LINK_CONF' does not exist; creating it"
+        echo >&2 "$(basename $0): error: '$LINK_CONF' does not exist; creating it"
         echo > "$LINK_CONF" << EOF 'SOURCE_DIR="$HOME/etc"
 BACKUP_DIR="$SOURCE_DIR.bak"
 
@@ -45,14 +45,14 @@ EOF
 
     source "$LINK_CONF" 2> /dev/null
     if [[ $? != 0 ]]; then
-        echo >&2 "$(basename $0): error: \`$LINK_CONF' could not be sourced"
+        echo >&2 "$(basename $0): error: '$LINK_CONF' could not be sourced"
         exit 1
     fi
     FSIZE=$(( ${#FILES[@]} / 2 ))
     declare -a ARG_FILES
 
     if [[ ! -d $SOURCE_DIR ]]; then
-        echo >&2 "$(basename $0): error: \`$SOURCE_DIR' does not exist or not directory"
+        echo >&2 "$(basename $0): error: '$SOURCE_DIR' does not exist or not directory"
         exit 1
     elif (( ${#FILES[@]} % 2 != 0 )); then
         echo >&2 "$(basename $0): error: FILES array is missing a key or value"
@@ -70,7 +70,7 @@ get_value() {
         fi
     done
 
-    echo >&2 "$(basename $0): error: key \`$KEY' not found"
+    echo >&2 "$(basename $0): error: key '$KEY' not found"
     return 1
 }
 
@@ -94,7 +94,7 @@ backup() {
         if [[ -e $SRC ]]; then
             # create any parent directories of $DST to mirror repo directory structure
             mkdir -p "$BACKUP_DIR/$(dirname "$DST")"
-            echo "\`$SRC' -> \`$BACKUP_DIR/$DST'"
+            echo "'$SRC' -> '$BACKUP_DIR/$DST'"
             case $(uname -s) in
               *Darwin*)
                 # MacOS cp does not have a -d option.
@@ -128,10 +128,10 @@ copy() {
 
             # create any parent directories of $DST
             mkdir -p "$(dirname "$DST")"
-            echo "\`$SOURCE_DIR/$SRC' -> \`$DST'"
+            echo "'$SOURCE_DIR/$SRC' -> '$DST'"
             cp -r "$SOURCE_DIR/$SRC" "$DST"
         else
-            echo >&2 "$(basename $0): warning: \`$DST' already exists"
+            echo >&2 "$(basename $0): warning: '$DST' already exists"
         fi
     done
 }
@@ -171,20 +171,20 @@ delete() {
         fi
 
         if [[ ! -e $DST ]]; then
-            echo >&2 "$(basename $0): warning: \`$DST' does not exist"
+            echo >&2 "$(basename $0): warning: '$DST' does not exist"
             remove_parents "$SRC" "$DST"
         elif [[ -L $DST || $FFLAG == 1 ]]; then
             # only print root directory name for directories
             if [[ -d $DST ]]; then
                 rm -rf "$DST"
-                echo "removed directory \`$DST'"
+                echo "removed directory '$DST'"
             else
                 rm -vf "$DST"
             fi
 
             remove_parents "$SRC" "$DST"
         else
-            echo >&2 "$(basename $0): warning: \`$DST' not symlink; use -f to remove"
+            echo >&2 "$(basename $0): warning: '$DST' not symlink; use -f to remove"
         fi
     done
 }
@@ -287,7 +287,7 @@ write() {
             mkdir -p "$(dirname "$DST")"
             ln -vfs "$SRC" "$DST"
         else
-            echo >&2 "$(basename $0): warning: \`$DST' already exists"
+            echo >&2 "$(basename $0): warning: '$DST' already exists"
         fi
     done
 }
@@ -310,7 +310,7 @@ view_diff() {
 use_config() {
     LINK_CONF=$1
     if [[ ! -r $LINK_CONF ]]; then
-        echo >&2 "$(basename $0): error: cannot read \`$LINK_CONF'"
+        echo >&2 "$(basename $0): error: cannot read '$LINK_CONF'"
         exit 1
     fi
 }
@@ -385,3 +385,5 @@ elif [[ $WFLAG == 1 ]]; then
 else
     list
 fi
+
+# vim: set ft=bash :
